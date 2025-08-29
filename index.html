@@ -1,216 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Dino Customizer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <title>Dino</title>
   <style>
-    /* light, clean styles */
-    :root { --card:#ffffff; --text:#111; --muted:#666; --line:#e6e6e6; }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: var(--text); }
-    .wrap { max-width: 720px; margin: 24px auto; padding: 24px; }
-    h1 { font-size: 20px; margin: 0 0 16px; }
-    .canvasBox { display: grid; place-items: center; background:#fafafa; border:1px solid var(--line); border-radius:12px; padding:16px; }
-    canvas { width: min(420px, 90vw); height: auto; image-rendering: crisp-edges; }
-    .panel { display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); margin-top:16px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; }
-    .row { display:flex; align-items:center; gap:8px; margin:8px 0; }
-    .row label { min-width:86px; color:var(--muted); }
-    .btns { display:flex; gap:8px; flex-wrap:wrap; }
-    button { padding:6px 10px; border:1px solid var(--line); background:#fff; border-radius:8px; cursor:pointer; }
-    button:hover { border-color:#bbb; }
-    .note { color:var(--muted); font-size:12px; margin-top:8px; }
+    body{font-family:system-ui,Arial;margin:20px}
+    .box{display:grid;place-items:center;border:1px solid #eee;border-radius:12px;padding:16px;background:#fafafa;max-width:520px}
+    canvas{width:min(420px,90vw);height:auto}
+    .row{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}
+    button{padding:6px 10px;border:1px solid #e6e6e6;background:#fff;border-radius:8px;cursor:pointer}
+    button:hover{border-color:#bbb}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Dino Customizer</h1>
+  <h2>Dino Customizer</h2>
+  <div class="box"><canvas id="c"></canvas></div>
 
-    <div class="canvasBox">
-      <canvas id="cv" aria-label="dino"></canvas>
-    </div>
+  <div class="row">
+    <strong>Body:</strong>
+    <button data-b="n0">N-0</button>
+    <button data-b="n1">N-1</button>
+    <button data-b="n2">N-2</button>
+  </div>
 
-    <div class="panel">
-      <div class="card">
-        <strong>Body</strong>
-        <div class="row">
-          <label for="bodyColor">Color</label>
-          <input id="bodyColor" type="color" value="#E6E6E6" />
-          <span id="bodyHex">#E6E6E6</span>
-        </div>
-        <div class="btns">
-          <button type="button" data-preset="body-n0">N-0</button>
-          <button type="button" data-preset="body-n1">N-1</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <strong>Belly</strong>
-        <div class="row">
-          <label for="bellyColor">Color</label>
-          <input id="bellyColor" type="color" value="#FFFFFF" />
-          <span id="bellyHex">#FFFFFF</span>
-        </div>
-        <div class="btns">
-          <button type="button" data-preset="belly-n0">N-0</button>
-          <button type="button" data-preset="belly-n1">N-1</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <strong>Lines safety</strong>
-        <div class="row">
-          <label for="lineGuard">Threshold</label>
-          <input id="lineGuard" type="range" min="0.25" max="0.55" step="0.01" value="0.40" />
-          <span id="guardVal">0.40</span>
-        </div>
-        <div class="note">If outlines/eyes get recolored, slide this up. If tiny gaps remain, slide down.</div>
-      </div>
-    </div>
+  <div class="row">
+    <strong>Belly:</strong>
+    <button data-e="n0">N-0</button>
+    <button data-e="n1">N-1</button>
+    <button data-e="n2">N-2</button>
   </div>
 
   <script>
-    // ---- files (must match your repo) ----
-    const IMG_BASE   = "N0_body.png";
-    const MASK_BODY  = "Mask_body.png";
-    const MASK_BELLY = "Mask_belly.png";
+    const BASE="N0_body.png"
+    const MBODY="Mask_body.png"
+    const MBELLY="Mask_belly.png"
 
-    // ---- official presets ----
-    // Provided by you:
-    const BODY_N0  = "#E6E6E6"; // Platinum
-    const BELLY_N0 = "#FFFFFF"; // White
-    // Pick reasonable N-1 defaults (change any time):
-    const BODY_N1  = "#6F6F6F";
-    const BELLY_N1 = "#D9D9D9";
+    const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
+    const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
+    let pickB="n0", pickE="n0"
 
-    // ---- tiny helpers ----
-    const hexToRGB = (hex) => {
-      const h = hex.replace("#",""); 
-      const bigint = parseInt(h,16);
-      if (h.length === 6) {
-        return { r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255 };
-      }
-      // short hex like #abc not expected, but handle
-      return {
-        r: parseInt(h[0]+h[0],16),
-        g: parseInt(h[1]+h[1],16),
-        b: parseInt(h[2]+h[2],16)
-      };
-    };
-    const rgbLightness = (r,g,b) => {
-      const max = Math.max(r,g,b), min = Math.min(r,g,b);
-      return (max + min) / 510; // 0..1
-    };
+    const c=document.getElementById("c"), x=c.getContext("2d")
+    const cb=document.createElement("canvas"), xb=cb.getContext("2d")
+    const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
+    const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
 
-    // ---- canvas setup ----
-    const cv  = document.getElementById("cv");
-    const ctx = cv.getContext("2d");
+    const img=new Image(), m1=new Image(), m2=new Image()
+    img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
+    img.src=BASE; m1.src=MBODY; m2.src=MBELLY
 
-    const offBase  = document.createElement("canvas");
-    const offBodyM = document.createElement("canvas");
-    const offBellyM= document.createElement("canvas");
-    const bctx  = offBase.getContext("2d");
-    const obctx = offBodyM.getContext("2d");
-    const oectx = offBellyM.getContext("2d");
-
-    const imgBase   = new Image();
-    const imgBodyM  = new Image();
-    const imgBellyM = new Image();
-    imgBase.crossOrigin = imgBodyM.crossOrigin = imgBellyM.crossOrigin = "anonymous";
-    imgBase.src = IMG_BASE;
-    imgBodyM.src = MASK_BODY;
-    imgBellyM.src = MASK_BELLY;
-
-    let loaded = 0;
-    function allLoaded() {
-      loaded++;
-      if (loaded < 3) return;
-      const w = imgBase.naturalWidth, h = imgBase.naturalHeight;
-      cv.width = w; cv.height = h;
-      offBase.width = w; offBase.height = h;
-      offBodyM.width = w; offBodyM.height = h;
-      offBellyM.width = w; offBellyM.height = h;
-      render();
+    let loaded=0
+    const done=()=>{ if(++loaded<3)return
+      const w=img.naturalWidth, h=img.naturalHeight
+      c.width=w; c.height=h
+      cb.width=w; cb.height=h
+      cm1.width=w; cm1.height=h
+      cm2.width=w; cm2.height=h
+      draw()
     }
-    imgBase.onload = allLoaded;
-    imgBodyM.onload = allLoaded;
-    imgBellyM.onload = allLoaded;
+    img.onload=done; m1.onload=done; m2.onload=done
 
-    // ---- UI wiring ----
-    const bodyColor  = document.getElementById("bodyColor");
-    const bellyColor = document.getElementById("bellyColor");
-    const bodyHexEl  = document.getElementById("bodyHex");
-    const bellyHexEl = document.getElementById("bellyHex");
-    const lineGuard  = document.getElementById("lineGuard");
-    const guardVal   = document.getElementById("guardVal");
+    function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
+    function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
 
-    // initialize to official N-0
-    bodyColor.value  = BODY_N0;
-    bellyColor.value = BELLY_N0;
-    bodyHexEl.textContent  = BODY_N0.toUpperCase();
-    bellyHexEl.textContent = BELLY_N0.toUpperCase();
-
-    bodyColor.oninput = () => { bodyHexEl.textContent = bodyColor.value.toUpperCase(); render(); };
-    bellyColor.oninput= () => { bellyHexEl.textContent = bellyColor.value.toUpperCase(); render(); };
-    lineGuard.oninput = () => { guardVal.textContent = Number(lineGuard.value).toFixed(2); render(); };
-
-    // preset buttons
-    document.querySelectorAll("button[data-preset]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const key = btn.getAttribute("data-preset");
-        if (key === "body-n0")  bodyColor.value  = BODY_N0;
-        if (key === "body-n1")  bodyColor.value  = BODY_N1;
-        if (key === "belly-n0") bellyColor.value = BELLY_N0;
-        if (key === "belly-n1") bellyColor.value = BELLY_N1;
-        bodyHexEl.textContent  = bodyColor.value.toUpperCase();
-        bellyHexEl.textContent = bellyColor.value.toUpperCase();
-        render();
-      });
-    });
-
-    function recolorRegion(baseData, maskData, targetRGB, outlineLMax) {
-      const bd = baseData.data, md = maskData.data;
-      for (let i = 0; i < bd.length; i += 4) {
-        if (md[i+3] <= 10) continue; // outside mask
-        if (bd[i+3] <= 10) continue; // transparent guard
-        const L = rgbLightness(bd[i], bd[i+1], bd[i+2]);
-        if (L <= outlineLMax) continue; // keep outlines/eyes
-        bd[i]   = targetRGB.r;
-        bd[i+1] = targetRGB.g;
-        bd[i+2] = targetRGB.b;
+    function paintRegion(base,mask,color){
+      const bd=base.data, md=mask.data, t=0.40, rgb=hex2rgb(color)
+      for(let i=0;i<bd.length;i+=4){
+        if(md[i+3]<=10)continue
+        if(bd[i+3]<=10)continue
+        if(L(bd[i],bd[i+1],bd[i+2])<=t)continue
+        bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
       }
     }
 
-    function render() {
-      if (!(imgBase.complete && imgBodyM.complete && imgBellyM.complete)) return;
-
-      // draw base & masks offscreen
-      bctx.clearRect(0,0,offBase.width,offBase.height);
-      obctx.clearRect(0,0,offBodyM.width,offBodyM.height);
-      oectx.clearRect(0,0,offBellyM.width,offBellyM.height);
-
-      bctx.drawImage(imgBase, 0, 0, offBase.width, offBase.height);
-      obctx.drawImage(imgBodyM, 0, 0, offBodyM.width, offBodyM.height);
-      oectx.drawImage(imgBellyM,0, 0, offBellyM.width,offBellyM.height);
-
-      const base   = bctx.getImageData(0,0,offBase.width,offBase.height);
-      const bodyM  = obctx.getImageData(0,0,offBodyM.width,offBodyM.height);
-      const bellyM = oectx.getImageData(0,0,offBellyM.width,offBellyM.height);
-
-      const outlineGuard = parseFloat(lineGuard.value);
-      const bodyRGB  = hexToRGB(bodyColor.value);
-      const bellyRGB = hexToRGB(bellyColor.value);
-
-      // color order: belly first, then body (so body never overwrites belly edges)
-      recolorRegion(base, bellyM, bellyRGB, outlineGuard);
-      recolorRegion(base, bodyM,  bodyRGB,  outlineGuard);
-
-      bctx.putImageData(base, 0, 0);
-      ctx.clearRect(0,0,cv.width,cv.height);
-      ctx.drawImage(offBase, 0, 0);
+    function draw(){
+      xb.clearRect(0,0,cb.width,cb.height)
+      xm1.clearRect(0,0,cm1.width,cm1.height)
+      xm2.clearRect(0,0,cm2.width,cm2.height)
+      xb.drawImage(img,0,0,cb.width,cb.height)
+      xm1.drawImage(m1,0,0,cm1.width,cm1.height)
+      xm2.drawImage(m2,0,0,cm2.width,cm2.height)
+      const base=xb.getImageData(0,0,cb.width,cb.height)
+      const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
+      const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
+      paintRegion(base,maskE,bellyC[pickE])
+      paintRegion(base,maskB,bodyC[pickB])
+      xb.putImageData(base,0,0)
+      x.clearRect(0,0,c.width,c.height)
+      x.drawImage(cb,0,0)
     }
+
+    document.querySelectorAll("button[data-b]").forEach(b=>{
+      b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
+    })
+    document.querySelectorAll("button[data-e]").forEach(b=>{
+      b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
+    })
   </script>
 </body>
 </html>
-
