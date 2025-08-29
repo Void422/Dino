@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dino Recolor (Body + Belly, Mask-based)</title>
+</head>
+<body>
+  <h3>Dino Body Recolor</h3>
+
+  <canvas id="cv" aria-label="dino"></canvas>
+
+  <div>
+    <label>Body shade:</label>
+    <select id="bodyShade">
+      <option value="n0" selected>N-0</option>
+      <option value="n1">N-1</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Belly shade:</label>
+    <select id="bellyShade">
+      <option value="n0" selected>N-0</option>
+      <option value="n1">N-1</option>
+    </select>
+  </div>
+
+  <script>
+    // ------------ CONFIG ------------
+    const IMG_BASE  = "N0_body.png";     // full dino (transparent bg)
+    const MASK_BODY = "Mask_body.png";   // body region (opaque where body)
+    const MASK_BELLY = "Mask_belly.png"; // belly region (opaque where belly)
+
+    // Flat colors for N-0 / N-1 (tweak to your exact tones)
+    const BODY_SHADES = {
+      n0: { r: 235, g: 235, b: 235 },
+      n1: { r: 95,  g: 95,  b: 95  }
+    };
+    const BELLY_SHADES = {
+      n0: { r: 245, g: 245, b: 245 },
+      n1: { r: 200, g: 200, b: 200 }
+    };
+
+    // Protect outlines/eye: skip recolor on dark pixels (0..1)
+    const OUTLINE_L_MAX = 0.40;
+
+    // ------------ SETUP ------------
+    const cv  = document.getElementById("cv");
+    const ctx = cv.getContext("2d");
+
+    const offBase  = document.createElement("canvas");
+    const offBody  = document.createElement("canvas");
+    const offBelly = document.createElement("canvas");
+    const bctx  = offBase.getContext("2d");
+    const obCtx = offBody.getContext("2d");
+    const oeCtx = offBelly.getContext("2d");
+
+    const imgBase  = new Image();
+    const imgBodyM = new Image();
+    const imgBellyM = new Image();
+    // helpful when serving on localhost
+    imgBase.crossOrigin = "anonymous";
+    imgBodyM.crossOrigin = "anonymous";
+    imgBellyM.crossOrigin = "anonymous";
+    imgBase.src  = IMG_BASE;
+    imgBodyM.src = MASK_BODY;
+    imgBellyM.src = MASK_BELLY;
+
+    let loaded = 0;
+    function onLoaded() {
+      loaded++;
+      if (loaded < 3) return;
+
+      const w = imgBase.naturalWidth, h = imgBase.naturalHeight;
+      cv.width = w; cv.height = h;
+      offBase.width = w; offBase.height = h;
+      offBody.width = w; offBody.height = h;
+      offBelly.width = w; offBelly.height = h;
+
+      render();
+    }
+    imgBase.onload = onLoaded;
+    imgBodyM.onload = onLoaded;
+    imgBellyM.onload = onLoaded;
+
+    document.getElementById("bodyShade").onchange  = render;
+    document.getElementById("bellyShade").onchange = render;
+
+    // ------------ HELPERS ------------
+    function rgbLightness(r, g, b) {
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      return (max + min) / 510; // (max+min)/2 / 255 -> 0..1
+    }
+
+    function recolorRegion(baseData, maskData, targetColor) {
+      const bd = baseData.data, md = maskData.data;
+      for (let i = 0; i < bd.length; i += 4) {
+        if (md[i + 3] <= 10) continue;   // outside mask
+        if (bd[i + 3] <= 10) continue;   // transparent guard
+
+        // preserve outlines/eye
+        const L = rgbLightness(bd[i], bd[i+1], bd[i+2]);
+        if (L <= OUTLINE_L_MAX) continue;
+
+        // flat overwrite for crisp look
+        bd[i]     = targetColor.r;
+        bd[i + 1] = targetColor.g;
+        bd[i + 2] = targetColor.b;
+        // keep original alpha
+      }
+    }
+
+    // ------------ CORE ------------
+    function render() {
+      if (!(imgBase.complete && imgBodyM.complete && imgBellyM.complete)) return;
+
+      const bodyPick  = BODY_SHADES[document.getElementById("bodyShade").value];
+      const bellyPick = BELLY_SHADES[document.getElementById("bellyShade").value];
+
+      // draw base + masks to offscreens
+      bctx.clearRect(0,0,offBase.width,offBase.height);
+      obCtx.clearRect(0,0,offBody.width,offBody.height);
+      oeCtx.clearRect(0,0,offBelly.width,offBelly.height);
+
+      bctx.drawImage(imgBase, 0, 0, offBase.width, offBase.height);
+      obCtx.drawImage(imgBodyM, 0, 0, offBody.width, offBody.height);
+      oeCtx.drawImage(imgBellyM, 0, 0, offBelly.width, offBelly.height);
+
+      const base  = bctx.getImageData(0,0,offBase.width,offBase.height);
+      const bodyM = obCtx.getImageData(0,0,offBody.width,offBody.height);
+      const bellyM= oeCtx.getImageData(0,0,offBelly.width,offBelly.height);
+
+      // Important: recolor belly first, then body.
+      // If masks overlap at edges, body recolor won't override belly.
+      recolorRegion(base, bellyM, bellyPick);
+      recolorRegion(base, bodyM,  bodyPick);
+
+      bctx.putImageData(base, 0, 0);
+
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(offBase, 0, 0);
+    }
+  </script>
+</body>
+</html>
+
+</html>
