@@ -31,70 +31,77 @@
   </div>
 
   <script>
-    const BASE="N0_body.png"
-    const MBODY="Mask_body.png"
-    const MBELLY="Mask_belly.png"
+  const BASE="N0_body.png"
+  const MBODY="Mask_body.png"
+  const MBELLY="Mask_belly.png"
 
-    const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
-    const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
-    let pickB="n0", pickE="n0"
+  const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
+  const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
+  let pickB="n0", pickE="n0"
 
-    const c=document.getElementById("c"), x=c.getContext("2d")
-    const cb=document.createElement("canvas"), xb=cb.getContext("2d")
-    const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
-    const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
+  const c=document.getElementById("c"), x=c.getContext("2d")
+  const cb=document.createElement("canvas"), xb=cb.getContext("2d")
+  const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
+  const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
 
-    const img=new Image(), m1=new Image(), m2=new Image()
-    img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
-    img.src=BASE; m1.src=MBODY; m2.src=MBELLY
+  const img=new Image(), m1=new Image(), m2=new Image()
+  img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
+  img.src=BASE; m1.src=MBODY; m2.src=MBELLY
 
-    let loaded=0
-    const done=()=>{ if(++loaded<3)return
-      const w=img.naturalWidth, h=img.naturalHeight
-      c.width=w; c.height=h
-      cb.width=w; cb.height=h
-      cm1.width=w; cm1.height=h
-      cm2.width=w; cm2.height=h
-      draw()
+  let loaded=0
+  const done=()=>{ if(++loaded<3)return
+    const w=img.naturalWidth, h=img.naturalHeight
+    c.width=w; c.height=h
+    cb.width=w; cb.height=h
+    cm1.width=w; cm1.height=h
+    cm2.width=w; cm2.height=h
+    draw()
+  }
+  img.onload=done; m1.onload=done; m2.onload=done
+
+  function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
+  function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
+
+  function paint(base,mask,color,orig){
+    const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(color)
+    for(let i=0;i<bd.length;i+=4){
+      if(md[i+3]<=10)continue
+      if(bd[i+3]<=10)continue
+      const l=L(od[i],od[i+1],od[i+2])   
+      if(l<=t)continue
+      bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
     }
-    img.onload=done; m1.onload=done; m2.onload=done
+  }
 
-    function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
-    function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
+  function draw(){
+    xb.clearRect(0,0,cb.width,cb.height)
+    xm1.clearRect(0,0,cm1.width,cm1.height)
+    xm2.clearRect(0,0,cm2.width,cm2.height)
+    xb.drawImage(img,0,0,cb.width,cb.height)
+    xm1.drawImage(m1,0,0,cm1.width,cm1.height)
+    xm2.drawImage(m2,0,0,cm2.width,cm2.height)
 
-    function paintRegion(base,mask,color){
-      const bd=base.data, md=mask.data, t=0.40, rgb=hex2rgb(color)
-      for(let i=0;i<bd.length;i+=4){
-        if(md[i+3]<=10)continue
-        if(bd[i+3]<=10)continue
-        if(L(bd[i],bd[i+1],bd[i+2])<=t)continue
-        bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
-      }
-    }
+    const base=xb.getImageData(0,0,cb.width,cb.height)
+    const orig=xb.getImageData(0,0,cb.width,cb.height)  
+    const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
+    const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
 
-    function draw(){
-      xb.clearRect(0,0,cb.width,cb.height)
-      xm1.clearRect(0,0,cm1.width,cm1.height)
-      xm2.clearRect(0,0,cm2.width,cm2.height)
-      xb.drawImage(img,0,0,cb.width,cb.height)
-      xm1.drawImage(m1,0,0,cm1.width,cm1.height)
-      xm2.drawImage(m2,0,0,cm2.width,cm2.height)
-      const base=xb.getImageData(0,0,cb.width,cb.height)
-      const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
-      const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
-      paintRegion(base,maskE,bellyC[pickE])
-      paintRegion(base,maskB,bodyC[pickB])
-      xb.putImageData(base,0,0)
-      x.clearRect(0,0,c.width,c.height)
-      x.drawImage(cb,0,0)
-    }
+    paint(base,maskE,bellyC[pickE],orig)
+    paint(base,maskB,bodyC[pickB],orig)
 
-    document.querySelectorAll("button[data-b]").forEach(b=>{
-      b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
-    })
-    document.querySelectorAll("button[data-e]").forEach(b=>{
-      b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
-    })
-  </script>
+    xb.putImageData(base,0,0)
+    x.clearRect(0,0,c.width,c.height)
+    x.drawImage(cb,0,0)
+  }
+
+  document.querySelectorAll("button[data-b]").forEach(b=>{
+    b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
+  })
+  document.querySelectorAll("button[data-e]").forEach(b=>{
+    b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
+  })
+</script>
+
 </body>
 </html>
+
