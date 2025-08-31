@@ -9,35 +9,35 @@
     *{box-sizing:border-box}
     body{font-family:system-ui,Arial;margin:18px;color:#111}
     h2{margin:0 0 14px}
-    .box{display:grid;place-items:center;background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:16px;max-width:680px}
+    .stage{display:grid;place-items:center;background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:16px;max-width:680px}
     canvas{width:min(520px,92vw);height:auto;image-rendering:crisp-edges}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
     .card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:10px}
     .sw{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;background:#fff}
     .chip{width:28px;height:28px;border-radius:8px;border:1px solid #ddd;flex:0 0 28px}
     .meta{font-size:12px;line-height:1.2}
     .id{font-weight:600}
-    .miss{opacity:.45;cursor:not-allowed;background:#f4f4f4}
-    .head{display:flex;justify-content:space-between;align-items:center}
+    .off{opacity:.45;cursor:not-allowed;background:#f4f4f4}
+    .header{display:flex;justify-content:space-between;align-items:center}
     select,button{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
-    button:hover, .sw:hover{border-color:#bdbdbd}
-    .cnt{font-size:12px;color:#666}
+    button:hover,.sw:hover{border-color:#bdbdbd}
+    .count{font-size:12px;color:#666}
   </style>
 </head>
 <body>
   <h2>Dino Customizer</h2>
 
-  <div class="box"><canvas id="c"></canvas></div>
+  <div class="stage"><canvas id="canvas"></canvas></div>
 
-  <div class="row card head" style="max-width:680px">
+  <div class="row card header" style="max-width:680px">
     <div>
       <strong>Body set:</strong>
-      <select id="grp">
+      <select id="groupSelect">
         <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
       </select>
     </div>
-    <div class="cnt" id="count"></div>
+    <div class="count" id="bodyCount"></div>
   </div>
 
   <div class="card" style="max-width:680px">
@@ -46,98 +46,194 @@
 
   <div class="row card" style="max-width:680px">
     <strong>Belly:</strong>
-    <button data-e="#FFFFFF">N-0 • White</button>
-    <button data-e="#BEBEBE">N-1 • #BEBEBE</button>
-    <button data-e="#911B11">N-2 • #911B11</button>
+    <button data-belly="#FFFFFF">N-0 • White</button>
+    <button data-belly="#BEBEBE">N-1 • #BEBEBE</button>
+    <button data-belly="#911B11">N-2 • #911B11</button>
   </div>
 
   <script>
-  const BASE="N0_body.png"
-  const MBODY="Mask_body.png"
-  const MBELLY="Mask_belly.png"
+    const baseSrc="N0_body.png"
+    const bodyMaskSrc="Mask_body.png"
+    const bellyMaskSrc="Mask_belly.png"
 
-  const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
-  const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
-  let pickB="n0", pickE="n0"
+    const palettes={
+      N:[
+        {id:"N-0",hex:"#E6E6E6",name:"Platinum",on:true},
+        {id:"N-1",hex:"#ABABAB",name:"Silver Chalice",on:true},
+        {id:"N-2",hex:"#82180A",name:"Kenyan Copper",on:true},
+        {id:"N-3",on:false},{id:"N-4",on:false},{id:"N-5",on:false},{id:"N-6",on:false},{id:"N-7",on:false},
+        {id:"N-8",on:false},{id:"N-9",on:false},{id:"N-10",on:false},{id:"N-11",on:false},{id:"N-12",on:false},
+        {id:"N-13",on:false},{id:"N-14",on:false},{id:"N-15",on:false},{id:"N-16",on:false},{id:"N-17",on:false},
+        {id:"N-18",on:false},{id:"N-19",on:false}
+      ],
+      R:[
+        {id:"R-0",hex:"#A67C6C",name:"Beaver",on:true},
+        {id:"R-1",hex:"#C2BFA0",name:"Dark Vanilla",on:true},
+        {id:"R-2",hex:"#8D4E1B",name:"Saddle Brown",on:true},
+        {id:"R-3",hex:"#E59770",name:"Middle Red",on:true},
+        {id:"R-4",hex:"#AAA6BF",name:"Cadet Blue",on:true},
+        {id:"R-5",hex:"#B58D83",name:"Pale Taupe",on:true},
+        {id:"R-6",hex:"#AABDC1",name:"Opal",on:true},
+        {id:"R-7",hex:"#7F8B97",name:"Roman Silver",on:true},
+        {id:"R-8",hex:"#DD5C92",name:"Raspberry Pink",on:true},
+        {id:"R-9",hex:"#898989",name:"Taupe Gray",on:true},
+        {id:"R-10",hex:"#95AED7",name:"Wild Blue Yonder",on:true},
+        {id:"R-11",hex:"#C98640",name:"Peru",on:true},
+        {id:"R-12",hex:"#46727F",name:"Ming",on:true},
+        {id:"R-13",on:false}
+      ],
+      E:[
+        {id:"E-0",hex:"#E6D585",name:"Flax",on:true},
+        {id:"E-1",hex:"#D7ACE4",name:"Tropical Violet",on:true},
+        {id:"E-2",hex:"#A1E5E4",name:"Non-Photo Blue",on:true},
+        {id:"E-3",hex:"#BB331D",name:"Dark Pastel Red",on:true},
+        {id:"E-4",hex:"#4A4A4A",name:"Quartz",on:true},
+        {id:"E-5",hex:"#4C9778",name:"Wintergreen Dream",on:true},
+        {id:"E-6",hex:"#55769F",name:"Blue Yonder",on:true},
+        {id:"E-7",hex:"#68934E",name:"Palm Leaf",on:true},
+        {id:"E-8",hex:"#386DBD",name:"Han Blue",on:true},
+        {id:"E-9",hex:"#7D2DDC",name:"Blue-Violet",on:true},
+        {id:"E-10",hex:"#C038CA",name:"Steel Pink",on:true}
+      ],
+      U:[
+        {id:"U-0",hex:"#E56A7E",name:"Candy Pink",on:true},
+        {id:"U-1",hex:"#E5CB43",name:"Sandstorm",on:true},
+        {id:"U-2",hex:"#E67BCD",name:"Orchid",on:true},
+        {id:"U-3",hex:"#9A5AE6",name:"Lavender Indigo",on:true},
+        {id:"U-4",hex:"#BEE500",name:"Bitter Lemon",on:true},
+        {id:"U-5",hex:"#363636",name:"Jet",on:true},
+        {id:"U-6",hex:"#1DC3D3",name:"Battery Charged Blue",on:true},
+        {id:"U-7",hex:"#548BE5",name:"United Nations Blue",on:true}
+      ],
+      L:[
+        {id:"L-0",hex:"#89D101",name:"Sheen Green",on:true},
+        {id:"L-1",hex:"#5FAEE6",name:"Blue Jeans",on:true},
+        {id:"L-2",hex:"#E68512",name:"Beer",on:true},
+        {id:"L-3",hex:"#D9402E",name:"CG Red",on:true},
+        {id:"L-4",hex:"#E6D900",name:"Peridot",on:true}
+      ]
+    }
 
-  const c=document.getElementById("c"), x=c.getContext("2d")
-  const cb=document.createElement("canvas"), xb=cb.getContext("2d")
-  const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
-  const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
+    let bodyHex="#E6E6E6"
+    let bellyHex="#FFFFFF"
 
-  const img=new Image(), m1=new Image(), m2=new Image()
-  img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
-  img.src=BASE; m1.src=MBODY; m2.src=MBELLY
+    const canvas=document.getElementById("canvas")
+    const ctx=canvas.getContext("2d",{willReadFrequently:true})
+    const offMain=document.createElement("canvas")
+    const offBody=document.createElement("canvas")
+    const offBelly=document.createElement("canvas")
+    const mainCtx=offMain.getContext("2d",{willReadFrequently:true})
+    const bodyCtx=offBody.getContext("2d",{willReadFrequently:true})
+    const bellyCtx=offBelly.getContext("2d",{willReadFrequently:true})
 
-  let ok=0, bbBase, bbBody, bbBelly
-  const done=()=>{ if(++ok<3)return
-    const w=img.naturalWidth, h=img.naturalHeight
-    c.width=w; c.height=h; cb.width=w; cb.height=h; cm1.width=w; cm1.height=h; cm2.width=w; cm2.height=h
-    bbBase=bbox(img); bbBody=bbox(m1); bbBelly=bbox(m2)
-    draw()
-  }
-  img.onload=done; m1.onload=done; m2.onload=done
+    const baseImg=new Image()
+    const bodyMaskImg=new Image()
+    const bellyMaskImg=new Image()
+    baseImg.crossOrigin=bodyMaskImg.crossOrigin=bellyMaskImg.crossOrigin="anonymous"
+    baseImg.src=baseSrc
+    bodyMaskImg.src=bodyMaskSrc
+    bellyMaskImg.src=bellyMaskSrc
 
-  function bbox(im){
-    const oc=document.createElement("canvas"), ox=oc.getContext("2d")
-    oc.width=im.naturalWidth; oc.height=im.naturalHeight
-    ox.drawImage(im,0,0)
-    const d=ox.getImageData(0,0,oc.width,oc.height).data
-    let minX=oc.width, minY=oc.height, maxX=-1, maxY=-1
-    for(let y=0;y<oc.height;y++){
-      for(let x=0;x<oc.width;x++){
-        const i=(y*oc.width+x)*4+3
-        if(d[i]>10){ if(x<minX)minX=x; if(y<minY)minY=y; if(x>maxX)maxX=x; if(y>maxY)maxY=y }
+    let readyCount=0
+    let baseBox, bodyBox, bellyBox
+    function whenReady(){
+      if(++readyCount<3) return
+      const w=baseImg.naturalWidth, h=baseImg.naturalHeight
+      canvas.width=w; canvas.height=h
+      offMain.width=w; offMain.height=h
+      offBody.width=w; offBody.height=h
+      offBelly.width=w; offBelly.height=h
+      baseBox=findBox(baseImg)
+      bodyBox=findBox(bodyMaskImg)
+      bellyBox=findBox(bellyMaskImg)
+      buildGrid("N")
+      drawAll()
+    }
+    baseImg.onload=whenReady
+    bodyMaskImg.onload=whenReady
+    bellyMaskImg.onload=whenReady
+
+    function findBox(img){
+      const oc=document.createElement("canvas")
+      const ox=oc.getContext("2d",{willReadFrequently:true})
+      oc.width=img.naturalWidth; oc.height=img.naturalHeight
+      ox.drawImage(img,0,0)
+      const d=ox.getImageData(0,0,oc.width,oc.height).data
+      let minX=oc.width, minY=oc.height, maxX=-1, maxY=-1
+      for(let y=0;y<oc.height;y++){
+        for(let x=0;x<oc.width;x++){
+          const a=d[(y*oc.width+x)*4+3]
+          if(a>10){ if(x<minX)minX=x; if(y<minY)minY=y; if(x>maxX)maxX=x; if(y>maxY)maxY=y }
+        }
+      }
+      if(maxX<0) return {x:0,y:0,w:oc.width,h:oc.height}
+      return {x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}
+    }
+
+    function hexToRgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
+    function light(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
+
+    function colorRegion(imgData, maskData, hex, original){
+      const bd=imgData.data, md=maskData.data, od=original.data
+      const keep=0.40, rgb=hexToRgb(hex)
+      for(let i=0;i<bd.length;i+=4){
+        if(md[i+3]<=10) continue
+        if(bd[i+3]<=10) continue
+        if(light(od[i],od[i+1],od[i+2])<=keep) continue
+        bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
       }
     }
-    if(maxX<0) return {x:0,y:0,w:oc.width,h:oc.height}
-    return {x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}
-  }
 
-  function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
-  function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
+    function drawAll(){
+      mainCtx.clearRect(0,0,offMain.width,offMain.height)
+      bodyCtx.clearRect(0,0,offBody.width,offBody.height)
+      bellyCtx.clearRect(0,0,offBelly.width,offBelly.height)
 
-  function paint(base,mask,col,orig){
-    const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(col)
-    for(let i=0;i<bd.length;i+=4){
-      if(md[i+3]<=10)continue
-      if(bd[i+3]<=10)continue
-      if(L(od[i],od[i+1],od[i+2])<=t)continue
-      bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
+      mainCtx.drawImage(baseImg,0,0,offMain.width,offMain.height)
+
+      bodyCtx.drawImage(bodyMaskImg, bodyBox.x, bodyBox.y, bodyBox.w, bodyBox.h, baseBox.x, baseBox.y, baseBox.w, baseBox.h)
+      bellyCtx.drawImage(bellyMaskImg, bellyBox.x, bellyBox.y, bellyBox.w, bellyBox.h, baseBox.x, baseBox.y, baseBox.w, baseBox.h)
+
+      const baseData=mainCtx.getImageData(0,0,offMain.width,offMain.height)
+      const origData=mainCtx.getImageData(0,0,offMain.width,offMain.height)
+      const bellyData=bellyCtx.getImageData(0,0,offBelly.width,offBelly.height)
+      const bodyData=bodyCtx.getImageData(0,0,offBody.width,offBody.height)
+
+      colorRegion(baseData, bellyData, bellyHex, origData)
+      colorRegion(baseData, bodyData, bodyHex, origData)
+
+      mainCtx.putImageData(baseData,0,0)
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      ctx.drawImage(offMain,0,0)
     }
-  }
 
-  function draw(){
-    xb.clearRect(0,0,cb.width,cb.height)
-    xm1.clearRect(0,0,cm1.width,cm1.height)
-    xm2.clearRect(0,0,cm2.width,cm2.height)
+    function buildGrid(groupKey){
+      const box=document.getElementById("bodyGrid")
+      box.innerHTML=""
+      const list=palettes[groupKey]
+      const have=list.filter(i=>i.on).length
+      document.getElementById("bodyCount").textContent=`Available ${have}/${list.length}`
+      list.forEach(item=>{
+        const sw=document.createElement("div")
+        sw.className="sw"+(item.on?"":" off")
+        const chip=document.createElement("div")
+        chip.className="chip"
+        chip.style.background=item.hex||"#fff"
+        const meta=document.createElement("div")
+        meta.className="meta"
+        const title=item.on?`${item.id} • ${item.name}`:`${item.id} • Missing`
+        const code=item.on?item.hex:"—"
+        meta.innerHTML=`<div class="id">${title}</div><div>${code}</div>`
+        sw.appendChild(chip); sw.appendChild(meta)
+        if(item.on){ sw.onclick=()=>{ bodyHex=item.hex; drawAll() } }
+        box.appendChild(sw)
+      })
+    }
 
-    xb.drawImage(img,0,0,cb.width,cb.height)
-
-    xm1.drawImage(m1, bbBody.x, bbBody.y, bbBody.w, bbBody.h, bbBase.x, bbBase.y, bbBase.w, bbBase.h)
-    xm2.drawImage(m2, bbBelly.x, bbBelly.y, bbBelly.w, bbBelly.h, bbBase.x, bbBase.y, bbBase.w, bbBase.h)
-
-    const base=xb.getImageData(0,0,cb.width,cb.height)
-    const orig=xb.getImageData(0,0,cb.width,cb.height)
-    const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
-    const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
-
-    paint(base,maskE,bellyC[pickE],orig)
-    paint(base,maskB,bodyC[pickB],orig)
-
-    xb.putImageData(base,0,0)
-    x.clearRect(0,0,c.width,c.height)
-    x.drawImage(cb,0,0)
-  }
-
-  document.querySelectorAll("button[data-b]").forEach(b=>{
-    b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
-  })
-  document.querySelectorAll("button[data-e]").forEach(b=>{
-    b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
-  })
-</script>
-
+    document.getElementById("groupSelect").onchange=e=>buildGrid(e.target.value)
+    document.querySelectorAll("button[data-belly]").forEach(btn=>{
+      btn.onclick=()=>{ bellyHex=btn.getAttribute("data-belly"); drawAll() }
+    })
+  </script>
 </body>
 </html>
-
