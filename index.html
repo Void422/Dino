@@ -7,45 +7,43 @@
   <link href="styles.css" rel="stylesheet" />
 </head>
 <body>
-  <h2>Dino Customizer</h2>
-
-  <div class="stage"><canvas id="canvas"></canvas></div>
-
-  <div class="row card header">
-    <div>
-      <strong>Body set:</strong>
-      <select id="groupSelect">
-        <option>N</option>
-        <option>R</option>
-        <option>E</option>
-        <option>U</option>
-        <option>L</option>
-      </select>
+  <header class="topbar">
+    <div class="brand">Dino Customizer</div>
+    <div class="toolbar">
+      <label class="picker">
+        <span>Body</span>
+        <select id="groupSelect">
+          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+        </select>
+      </label>
+      <label class="picker">
+        <span>Belly</span>
+        <select id="bellySelect">
+          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+        </select>
+      </label>
     </div>
-    <div class="count" id="bodyCount"></div>
-  </div>
+  </header>
 
-  <div class="card">
-    <div id="bodyGrid" class="grid"></div>
-  </div>
+  <main class="wrap">
+    <section class="stage"><canvas id="canvas"></canvas></section>
 
-  <div class="row card header">
-    <div>
-      <strong>Belly set:</strong>
-      <select id="bellySelect">
-        <option>N</option>
-        <option>R</option>
-        <option>E</option>
-        <option>U</option>
-        <option>L</option>
-      </select>
-    </div>
-    <div class="count" id="bellyCount"></div>
-  </div>
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Body colors</h3>
+        <div class="count" id="bodyCount"></div>
+      </div>
+      <div id="bodyGrid" class="grid"></div>
+    </section>
 
-  <div class="card">
-    <div id="bellyGrid" class="grid"></div>
-  </div>
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Belly colors</h3>
+        <div class="count" id="bellyCount"></div>
+      </div>
+      <div id="bellyGrid" class="grid"></div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
