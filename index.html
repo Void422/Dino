@@ -52,140 +52,92 @@
   </div>
 
   <script>
-    const BASE="N0_body.png", MBODY="Mask_body.png", MBELLY="Mask_belly.png"
+  const BASE="N0_body.png"
+  const MBODY="Mask_body.png"
+  const MBELLY="Mask_belly.png"
 
-    const data={
-      N:[
-        {id:"N-0",hex:"#E6E6E6",name:"Platinum",ok:1},
-        {id:"N-1",hex:"#ABABAB",name:"Silver Chalice",ok:1},
-        {id:"N-2",hex:"#82180A",name:"Kenyan Copper",ok:1},
-        {id:"N-3",ok:0},{id:"N-4",ok:0},{id:"N-5",ok:0},{id:"N-6",ok:0},{id:"N-7",ok:0},
-        {id:"N-8",ok:0},{id:"N-9",ok:0},{id:"N-10",ok:0},{id:"N-11",ok:0},{id:"N-12",ok:0},
-        {id:"N-13",ok:0},{id:"N-14",ok:0},{id:"N-15",ok:0},{id:"N-16",ok:0},{id:"N-17",ok:0},
-        {id:"N-18",ok:0},{id:"N-19",ok:0}
-      ],
-      R:[
-        {id:"R-0",hex:"#A67C6C",name:"Beaver",ok:1},
-        {id:"R-1",hex:"#C2BFA0",name:"Dark Vanilla",ok:1},
-        {id:"R-2",hex:"#8D4E1B",name:"Saddle Brown",ok:1},
-        {id:"R-3",hex:"#E59770",name:"Middle Red",ok:1},
-        {id:"R-4",hex:"#AAA6BF",name:"Cadet Blue",ok:1},
-        {id:"R-5",hex:"#B58D83",name:"Pale Taupe",ok:1},
-        {id:"R-6",hex:"#AABDC1",name:"Opal",ok:1},
-        {id:"R-7",hex:"#7F8B97",name:"Roman Silver",ok:1},
-        {id:"R-8",hex:"#DD5C92",name:"Raspberry Pink",ok:1},
-        {id:"R-9",hex:"#898989",name:"Taupe Gray",ok:1},
-        {id:"R-10",hex:"#95AED7",name:"Wild Blue Yonder",ok:1},
-        {id:"R-11",hex:"#C98640",name:"Peru",ok:1},
-        {id:"R-12",hex:"#46727F",name:"Ming",ok:1},
-        {id:"R-13",ok:0}
-      ],
-      E:[
-        {id:"E-0",hex:"#E6D585",name:"Flax",ok:1},
-        {id:"E-1",hex:"#D7ACE4",name:"Tropical Violet",ok:1},
-        {id:"E-2",hex:"#A1E5E4",name:"Non-Photo Blue",ok:1},
-        {id:"E-3",hex:"#BB331D",name:"Dark Pastel Red",ok:1},
-        {id:"E-4",hex:"#4A4A4A",name:"Quartz",ok:1},
-        {id:"E-5",hex:"#4C9778",name:"Wintergreen Dream",ok:1},
-        {id:"E-6",hex:"#55769F",name:"Blue Yonder",ok:1},
-        {id:"E-7",hex:"#68934E",name:"Palm Leaf",ok:1},
-        {id:"E-8",hex:"#386DBD",name:"Han Blue",ok:1},
-        {id:"E-9",hex:"#7D2DDC",name:"Blue-Violet",ok:1},
-        {id:"E-10",hex:"#C038CA",name:"Steel Pink",ok:1}
-      ],
-      U:[
-        {id:"U-0",hex:"#E56A7E",name:"Candy Pink",ok:1},
-        {id:"U-1",hex:"#E5CB43",name:"Sandstorm",ok:1},
-        {id:"U-2",hex:"#E67BCD",name:"Orchid",ok:1},
-        {id:"U-3",hex:"#9A5AE6",name:"Lavender Indigo",ok:1},
-        {id:"U-4",hex:"#BEE500",name:"Bitter Lemon",ok:1},
-        {id:"U-5",hex:"#363636",name:"Jet",ok:1},
-        {id:"U-6",hex:"#1DC3D3",name:"Battery Charged Blue",ok:1},
-        {id:"U-7",hex:"#548BE5",name:"United Nations Blue",ok:1}
-      ],
-      L:[
-        {id:"L-0",hex:"#89D101",name:"Sheen Green",ok:1},
-        {id:"L-1",hex:"#5FAEE6",name:"Blue Jeans",ok:1},
-        {id:"L-2",hex:"#E68512",name:"Beer",ok:1},
-        {id:"L-3",hex:"#D9402E",name:"CG Red",ok:1},
-        {id:"L-4",hex:"#E6D900",name:"Peridot",ok:1}
-      ]
-    }
+  const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
+  const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
+  let pickB="n0", pickE="n0"
 
-    let bHex="#E6E6E6", eHex="#FFFFFF"
+  const c=document.getElementById("c"), x=c.getContext("2d")
+  const cb=document.createElement("canvas"), xb=cb.getContext("2d")
+  const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
+  const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
 
-    const c=document.getElementById("c"), x=c.getContext("2d")
-    const cb=document.createElement("canvas"), xb=cb.getContext("2d")
-    const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
-    const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
+  const img=new Image(), m1=new Image(), m2=new Image()
+  img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
+  img.src=BASE; m1.src=MBODY; m2.src=MBELLY
 
-    const base=new Image(), m1=new Image(), m2=new Image()
-    base.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
-    base.src=BASE; m1.src=MBODY; m2.src=MBELLY
+  let ok=0, bbBase, bbBody, bbBelly
+  const done=()=>{ if(++ok<3)return
+    const w=img.naturalWidth, h=img.naturalHeight
+    c.width=w; c.height=h; cb.width=w; cb.height=h; cm1.width=w; cm1.height=h; cm2.width=w; cm2.height=h
+    bbBase=bbox(img); bbBody=bbox(m1); bbBelly=bbox(m2)
+    draw()
+  }
+  img.onload=done; m1.onload=done; m2.onload=done
 
-    let ok=0
-    const onr=()=>{ if(++ok<3)return
-      const w=base.naturalWidth,h=base.naturalHeight
-      c.width=w;c.height=h;cb.width=w;cb.height=h;cm1.width=w;cm1.height=h;cm2.width=w;cm2.height=h
-      build("N"); draw()
-    }
-    base.onload=onr;m1.onload=onr;m2.onload=onr
-
-    function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
-    function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
-
-    function paint(img,mask,col,org){
-      const bd=img.data, md=mask.data, od=org.data, t=0.40, rgb=hex2rgb(col)
-      for(let i=0;i<bd.length;i+=4){
-        if(md[i+3]<=10)continue
-        if(bd[i+3]<=10)continue
-        if(L(od[i],od[i+1],od[i+2])<=t)continue
-        bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
+  function bbox(im){
+    const oc=document.createElement("canvas"), ox=oc.getContext("2d")
+    oc.width=im.naturalWidth; oc.height=im.naturalHeight
+    ox.drawImage(im,0,0)
+    const d=ox.getImageData(0,0,oc.width,oc.height).data
+    let minX=oc.width, minY=oc.height, maxX=-1, maxY=-1
+    for(let y=0;y<oc.height;y++){
+      for(let x=0;x<oc.width;x++){
+        const i=(y*oc.width+x)*4+3
+        if(d[i]>10){ if(x<minX)minX=x; if(y<minY)minY=y; if(x>maxX)maxX=x; if(y>maxY)maxY=y }
       }
     }
+    if(maxX<0) return {x:0,y:0,w:oc.width,h:oc.height}
+    return {x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}
+  }
 
-    function draw(){
-      xb.clearRect(0,0,cb.width,cb.height)
-      xm1.clearRect(0,0,cm1.width,cm1.height)
-      xm2.clearRect(0,0,cm2.width,cm2.height)
-      xb.drawImage(base,0,0,cb.width,cb.height)
-      xm1.drawImage(m1,0,0,cm1.width,cm1.height)
-      xm2.drawImage(m2,0,0,cm2.width,cm2.height)
-      const img=xb.getImageData(0,0,cb.width,cb.height)
-      const org=xb.getImageData(0,0,cb.width,cb.height)
-      const me=xm2.getImageData(0,0,cm2.width,cm2.height)
-      const mb=xm1.getImageData(0,0,cm1.width,cm1.height)
-      paint(img,me,eHex,org)
-      paint(img,mb,bHex,org)
-      xb.putImageData(img,0,0)
-      x.clearRect(0,0,c.width,c.height)
-      x.drawImage(cb,0,0)
+  function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
+  function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
+
+  function paint(base,mask,col,orig){
+    const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(col)
+    for(let i=0;i<bd.length;i+=4){
+      if(md[i+3]<=10)continue
+      if(bd[i+3]<=10)continue
+      if(L(od[i],od[i+1],od[i+2])<=t)continue
+      bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
     }
+  }
 
-    function build(group){
-      const box=document.getElementById("bodyGrid"); box.innerHTML=""
-      const arr=data[group]
-      const have=arr.filter(a=>a.ok).length
-      document.getElementById("count").textContent=`Available ${have}/${arr.length}`
-      arr.forEach(a=>{
-        const el=document.createElement("div")
-        el.className="sw"+(a.ok?"":" miss")
-        const chip=document.createElement("div"); chip.className="chip"
-        chip.style.background=a.hex||"#fff"
-        const meta=document.createElement("div"); meta.className="meta"
-        const name=a.ok?`${a.id} • ${a.name}`:`${a.id} • Missing`
-        const hex=a.ok?a.hex:"—"
-        meta.innerHTML=`<div class="id">${name}</div><div>${hex}</div>`
-        el.appendChild(chip); el.appendChild(meta)
-        if(a.ok){ el.onclick=()=>{bHex=a.hex; draw()} }
-        box.appendChild(el)
-      })
-    }
+  function draw(){
+    xb.clearRect(0,0,cb.width,cb.height)
+    xm1.clearRect(0,0,cm1.width,cm1.height)
+    xm2.clearRect(0,0,cm2.width,cm2.height)
 
-    document.getElementById("grp").onchange=e=>build(e.target.value)
-    document.querySelectorAll("button[data-e]").forEach(b=>{
-      b.onclick=()=>{eHex=b.getAttribute("data-e"); draw()}
-    })
-  </script>
+    xb.drawImage(img,0,0,cb.width,cb.height)
+
+    xm1.drawImage(m1, bbBody.x, bbBody.y, bbBody.w, bbBody.h, bbBase.x, bbBase.y, bbBase.w, bbBase.h)
+    xm2.drawImage(m2, bbBelly.x, bbBelly.y, bbBelly.w, bbBelly.h, bbBase.x, bbBase.y, bbBase.w, bbBase.h)
+
+    const base=xb.getImageData(0,0,cb.width,cb.height)
+    const orig=xb.getImageData(0,0,cb.width,cb.height)
+    const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
+    const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
+
+    paint(base,maskE,bellyC[pickE],orig)
+    paint(base,maskB,bodyC[pickB],orig)
+
+    xb.putImageData(base,0,0)
+    x.clearRect(0,0,c.width,c.height)
+    x.drawImage(cb,0,0)
+  }
+
+  document.querySelectorAll("button[data-b]").forEach(b=>{
+    b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
+  })
+  document.querySelectorAll("button[data-e]").forEach(b=>{
+    b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
+  })
+</script>
+
 </body>
 </html>
+
