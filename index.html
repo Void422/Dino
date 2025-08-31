@@ -3,47 +3,113 @@
 <head>
   <meta charset="utf-8">
   <title>Dino Customizer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body{font-family:system-ui,Arial;margin:20px}
-    .box{display:grid;place-items:center;border:1px solid #eee;border-radius:12px;padding:16px;background:#fafafa;max-width:560px}
-    canvas{width:min(460px,90vw);height:auto}
-    .row{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .grid{display:flex;flex-wrap:wrap;gap:8px}
-    button{padding:6px 10px;border:1px solid #e6e6e6;background:#fff;border-radius:8px;cursor:pointer}
-    .sw{width:44px;height:30px;border-radius:8px;border:1px solid #ddd;cursor:pointer}
-    select{padding:6px 10px;border:1px solid #e6e6e6;border-radius:8px;background:#fff}
+    :root{--line:#e6e6e6}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,Arial;margin:18px;color:#111}
+    h2{margin:0 0 14px}
+    .box{display:grid;place-items:center;background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:16px;max-width:680px}
+    canvas{width:min(520px,92vw);height:auto;image-rendering:crisp-edges}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+    .card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px}
+    .sw{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;background:#fff}
+    .chip{width:28px;height:28px;border-radius:8px;border:1px solid #ddd;flex:0 0 28px}
+    .meta{font-size:12px;line-height:1.2}
+    .id{font-weight:600}
+    .miss{opacity:.45;cursor:not-allowed;background:#f4f4f4}
+    .head{display:flex;justify-content:space-between;align-items:center}
+    select,button{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+    button:hover, .sw:hover{border-color:#bdbdbd}
+    .cnt{font-size:12px;color:#666}
   </style>
 </head>
 <body>
   <h2>Dino Customizer</h2>
+
   <div class="box"><canvas id="c"></canvas></div>
 
-  <div class="row">
-    <strong>Body set:</strong>
-    <select id="grp">
-      <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
-    </select>
+  <div class="row card head" style="max-width:680px">
+    <div>
+      <strong>Body set:</strong>
+      <select id="grp">
+        <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+      </select>
+    </div>
+    <div class="cnt" id="count"></div>
   </div>
-  <div class="row"><div id="bodyBtns" class="grid"></div></div>
 
-  <div class="row">
+  <div class="card" style="max-width:680px">
+    <div id="bodyGrid" class="grid"></div>
+  </div>
+
+  <div class="row card" style="max-width:680px">
     <strong>Belly:</strong>
-    <button data-ehex="#FFFFFF">N-0</button>
-    <button data-ehex="#BEBEBE">N-1</button>
-    <button data-ehex="#911B11">N-2</button>
+    <button data-e="#FFFFFF">N-0 • White</button>
+    <button data-e="#BEBEBE">N-1 • #BEBEBE</button>
+    <button data-e="#911B11">N-2 • #911B11</button>
   </div>
 
   <script>
-    const BASE="N0_body.png"
-    const MBODY="Mask_body.png"
-    const MBELLY="Mask_belly.png"
+    const BASE="N0_body.png", MBODY="Mask_body.png", MBELLY="Mask_belly.png"
 
-    const sets={
-      N:{"N-0":"#E6E6E6","N-1":"#ABABAB","N-2":"#82180A"},
-      R:{"R-0":"#A67C6C","R-1":"#C2BFA0","R-2":"#8D4E1B","R-3":"#E59770","R-4":"#AAA6BF","R-5":"#B58D83","R-6":"#AABDC1","R-7":"#7F8B97","R-8":"#DD5C92","R-9":"#898989","R-10":"#95AED7","R-11":"#C98640","R-12":"#46727F"},
-      E:{"E-0":"#E6D585","E-1":"#D7ACE4","E-2":"#A1E5E4","E-3":"#BB331D","E-4":"#4A4A4A","E-5":"#4C9778","E-6":"#55769F","E-7":"#68934E","E-8":"#386DBD","E-9":"#7D2DDC","E-10":"#C038CA"},
-      U:{"U-0":"#E56A7E","U-1":"#E5CB43","U-2":"#E67BCD","U-3":"#9A5AE6","U-4":"#BEE500","U-5":"#363636","U-6":"#1DC3D3","U-7":"#548BE5"},
-      L:{"L-0":"#89D101","L-1":"#5FAEE6","L-2":"#E68512","L-3":"#D9402E","L-4":"#E6D900"}
+    const data={
+      N:[
+        {id:"N-0",hex:"#E6E6E6",name:"Platinum",ok:1},
+        {id:"N-1",hex:"#ABABAB",name:"Silver Chalice",ok:1},
+        {id:"N-2",hex:"#82180A",name:"Kenyan Copper",ok:1},
+        {id:"N-3",ok:0},{id:"N-4",ok:0},{id:"N-5",ok:0},{id:"N-6",ok:0},{id:"N-7",ok:0},
+        {id:"N-8",ok:0},{id:"N-9",ok:0},{id:"N-10",ok:0},{id:"N-11",ok:0},{id:"N-12",ok:0},
+        {id:"N-13",ok:0},{id:"N-14",ok:0},{id:"N-15",ok:0},{id:"N-16",ok:0},{id:"N-17",ok:0},
+        {id:"N-18",ok:0},{id:"N-19",ok:0}
+      ],
+      R:[
+        {id:"R-0",hex:"#A67C6C",name:"Beaver",ok:1},
+        {id:"R-1",hex:"#C2BFA0",name:"Dark Vanilla",ok:1},
+        {id:"R-2",hex:"#8D4E1B",name:"Saddle Brown",ok:1},
+        {id:"R-3",hex:"#E59770",name:"Middle Red",ok:1},
+        {id:"R-4",hex:"#AAA6BF",name:"Cadet Blue",ok:1},
+        {id:"R-5",hex:"#B58D83",name:"Pale Taupe",ok:1},
+        {id:"R-6",hex:"#AABDC1",name:"Opal",ok:1},
+        {id:"R-7",hex:"#7F8B97",name:"Roman Silver",ok:1},
+        {id:"R-8",hex:"#DD5C92",name:"Raspberry Pink",ok:1},
+        {id:"R-9",hex:"#898989",name:"Taupe Gray",ok:1},
+        {id:"R-10",hex:"#95AED7",name:"Wild Blue Yonder",ok:1},
+        {id:"R-11",hex:"#C98640",name:"Peru",ok:1},
+        {id:"R-12",hex:"#46727F",name:"Ming",ok:1},
+        {id:"R-13",ok:0}
+      ],
+      E:[
+        {id:"E-0",hex:"#E6D585",name:"Flax",ok:1},
+        {id:"E-1",hex:"#D7ACE4",name:"Tropical Violet",ok:1},
+        {id:"E-2",hex:"#A1E5E4",name:"Non-Photo Blue",ok:1},
+        {id:"E-3",hex:"#BB331D",name:"Dark Pastel Red",ok:1},
+        {id:"E-4",hex:"#4A4A4A",name:"Quartz",ok:1},
+        {id:"E-5",hex:"#4C9778",name:"Wintergreen Dream",ok:1},
+        {id:"E-6",hex:"#55769F",name:"Blue Yonder",ok:1},
+        {id:"E-7",hex:"#68934E",name:"Palm Leaf",ok:1},
+        {id:"E-8",hex:"#386DBD",name:"Han Blue",ok:1},
+        {id:"E-9",hex:"#7D2DDC",name:"Blue-Violet",ok:1},
+        {id:"E-10",hex:"#C038CA",name:"Steel Pink",ok:1}
+      ],
+      U:[
+        {id:"U-0",hex:"#E56A7E",name:"Candy Pink",ok:1},
+        {id:"U-1",hex:"#E5CB43",name:"Sandstorm",ok:1},
+        {id:"U-2",hex:"#E67BCD",name:"Orchid",ok:1},
+        {id:"U-3",hex:"#9A5AE6",name:"Lavender Indigo",ok:1},
+        {id:"U-4",hex:"#BEE500",name:"Bitter Lemon",ok:1},
+        {id:"U-5",hex:"#363636",name:"Jet",ok:1},
+        {id:"U-6",hex:"#1DC3D3",name:"Battery Charged Blue",ok:1},
+        {id:"U-7",hex:"#548BE5",name:"United Nations Blue",ok:1}
+      ],
+      L:[
+        {id:"L-0",hex:"#89D101",name:"Sheen Green",ok:1},
+        {id:"L-1",hex:"#5FAEE6",name:"Blue Jeans",ok:1},
+        {id:"L-2",hex:"#E68512",name:"Beer",ok:1},
+        {id:"L-3",hex:"#D9402E",name:"CG Red",ok:1},
+        {id:"L-4",hex:"#E6D900",name:"Peridot",ok:1}
+      ]
     }
 
     let bHex="#E6E6E6", eHex="#FFFFFF"
@@ -53,23 +119,23 @@
     const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
     const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
 
-    const img=new Image(), m1=new Image(), m2=new Image()
-    img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
-    img.src=BASE; m1.src=MBODY; m2.src=MBELLY
+    const base=new Image(), m1=new Image(), m2=new Image()
+    base.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
+    base.src=BASE; m1.src=MBODY; m2.src=MBELLY
 
     let ok=0
-    const ready=()=>{ if(++ok<3)return
-      const w=img.naturalWidth,h=img.naturalHeight
+    const onr=()=>{ if(++ok<3)return
+      const w=base.naturalWidth,h=base.naturalHeight
       c.width=w;c.height=h;cb.width=w;cb.height=h;cm1.width=w;cm1.height=h;cm2.width=w;cm2.height=h
-      buildBtns("N"); draw()
+      build("N"); draw()
     }
-    img.onload=ready;m1.onload=ready;m2.onload=ready
+    base.onload=onr;m1.onload=onr;m2.onload=onr
 
     function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
     function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
 
-    function paint(base,mask,color,orig){
-      const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(color)
+    function paint(img,mask,col,org){
+      const bd=img.data, md=mask.data, od=org.data, t=0.40, rgb=hex2rgb(col)
       for(let i=0;i<bd.length;i+=4){
         if(md[i+3]<=10)continue
         if(bd[i+3]<=10)continue
@@ -82,34 +148,43 @@
       xb.clearRect(0,0,cb.width,cb.height)
       xm1.clearRect(0,0,cm1.width,cm1.height)
       xm2.clearRect(0,0,cm2.width,cm2.height)
-      xb.drawImage(img,0,0,cb.width,cb.height)
+      xb.drawImage(base,0,0,cb.width,cb.height)
       xm1.drawImage(m1,0,0,cm1.width,cm1.height)
       xm2.drawImage(m2,0,0,cm2.width,cm2.height)
-      const base=xb.getImageData(0,0,cb.width,cb.height)
-      const orig=xb.getImageData(0,0,cb.width,cb.height)
-      const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
-      const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
-      paint(base,maskE,eHex,orig)
-      paint(base,maskB,bHex,orig)
-      xb.putImageData(base,0,0)
+      const img=xb.getImageData(0,0,cb.width,cb.height)
+      const org=xb.getImageData(0,0,cb.width,cb.height)
+      const me=xm2.getImageData(0,0,cm2.width,cm2.height)
+      const mb=xm1.getImageData(0,0,cm1.width,cm1.height)
+      paint(img,me,eHex,org)
+      paint(img,mb,bHex,org)
+      xb.putImageData(img,0,0)
       x.clearRect(0,0,c.width,c.height)
       x.drawImage(cb,0,0)
     }
 
-    function buildBtns(group){
-      const wrap=document.getElementById("bodyBtns")
-      wrap.innerHTML=""
-      Object.entries(sets[group]).forEach(([k,v])=>{
-        const a=document.createElement("button")
-        a.className="sw"; a.title=k; a.style.background=v
-        a.onclick=()=>{bHex=v; draw()}
-        wrap.appendChild(a)
+    function build(group){
+      const box=document.getElementById("bodyGrid"); box.innerHTML=""
+      const arr=data[group]
+      const have=arr.filter(a=>a.ok).length
+      document.getElementById("count").textContent=`Available ${have}/${arr.length}`
+      arr.forEach(a=>{
+        const el=document.createElement("div")
+        el.className="sw"+(a.ok?"":" miss")
+        const chip=document.createElement("div"); chip.className="chip"
+        chip.style.background=a.hex||"#fff"
+        const meta=document.createElement("div"); meta.className="meta"
+        const name=a.ok?`${a.id} • ${a.name}`:`${a.id} • Missing`
+        const hex=a.ok?a.hex:"—"
+        meta.innerHTML=`<div class="id">${name}</div><div>${hex}</div>`
+        el.appendChild(chip); el.appendChild(meta)
+        if(a.ok){ el.onclick=()=>{bHex=a.hex; draw()} }
+        box.appendChild(el)
       })
     }
 
-    document.getElementById("grp").onchange=e=>{buildBtns(e.target.value)}
-    document.querySelectorAll("button[data-ehex]").forEach(b=>{
-      b.onclick=()=>{eHex=b.getAttribute("data-ehex"); draw()}
+    document.getElementById("grp").onchange=e=>build(e.target.value)
+    document.querySelectorAll("button[data-e]").forEach(b=>{
+      b.onclick=()=>{eHex=b.getAttribute("data-e"); draw()}
     })
   </script>
 </body>
