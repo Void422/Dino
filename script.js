@@ -2,9 +2,11 @@ const ui = {
   canvas: document.getElementById("canvas"),
   ctx: null,
   groupSelect: document.getElementById("groupSelect"),
+  bellySelect: document.getElementById("bellySelect"),
   bodyGrid: document.getElementById("bodyGrid"),
+  bellyGrid: document.getElementById("bellyGrid"),
   bodyCount: document.getElementById("bodyCount"),
-  bellyButtons: document.getElementById("bellyButtons")
+  bellyCount: document.getElementById("bellyCount")
 }
 
 let info, baseImg, bodyMaskImg, bellyMaskImg
@@ -54,8 +56,9 @@ function initCanvases() {
   bellyBox = findBox(bellyMaskImg)
 
   buildBodySet("N")
-  buildBellyButtons(info.bellyPresets)
+  buildBellySet("N")
   ui.groupSelect.onchange = e => buildBodySet(e.target.value)
+  ui.bellySelect.onchange = e => buildBellySet(e.target.value)
   drawAll()
 }
 
@@ -69,7 +72,7 @@ function findBox(img) {
   for (let y=0; y<c.height; y++) {
     for (let x=0; x<c.width; x++) {
       const a = d[(y*c.width + x)*4 + 3]
-      if (a>10) { if (x<minX) minX=x; if (y<minY) minY=y; if (x>maxX) maxX=x; if (y>maxY) maxY=y }
+      if (a>10) { if (x<minX)minX=x; if (y<minY)minY=y; if (x>maxX)maxX=x; if (y>maxY)maxY=y }
     }
   }
   if (maxX<0) return { x:0, y:0, w:c.width, h:c.height }
@@ -199,12 +202,24 @@ function buildBodySet(groupKey) {
   })
 }
 
-function buildBellyButtons(list) {
-  ui.bellyButtons.innerHTML = ""
-  list.forEach(b=>{
-    const btn = document.createElement("button")
-    btn.textContent = `${b.id} • ${b.name}`
-    btn.onclick = ()=>{ bellyColor = b.hex; drawAll() }
-    ui.bellyButtons.appendChild(btn)
+function buildBellySet(groupKey) {
+  const list = info.bellySets[groupKey]
+  ui.bellyGrid.innerHTML = ""
+  const have = list.filter(i=>i.on).length
+  ui.bellyCount.textContent = `Available ${have}/${list.length}`
+  list.forEach(item=>{
+    const card = document.createElement("div")
+    card.className = "swatch" + (item.on ? "" : " s-off")
+    const dot = document.createElement("div")
+    dot.className = "dot"
+    dot.style.background = item.hex || "#fff"
+    const meta = document.createElement("div")
+    meta.className = "meta"
+    const title = item.on ? `${item.id} • ${item.name || "Belly"}` : `${item.id} • Missing`
+    const code = item.on ? item.hex : "—"
+    meta.innerHTML = `<div class="name">${title}</div><div>${code}</div>`
+    card.appendChild(dot); card.appendChild(meta)
+    if (item.on) card.onclick = ()=>{ bellyColor = item.hex; drawAll() }
+    ui.bellyGrid.appendChild(card)
   })
 }
