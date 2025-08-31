@@ -2,14 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Dino</title>
+  <title>Dino Customizer</title>
   <style>
     body{font-family:system-ui,Arial;margin:20px}
-    .box{display:grid;place-items:center;border:1px solid #eee;border-radius:12px;padding:16px;background:#fafafa;max-width:520px}
-    canvas{width:min(420px,90vw);height:auto}
-    .row{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}
+    .box{display:grid;place-items:center;border:1px solid #eee;border-radius:12px;padding:16px;background:#fafafa;max-width:560px}
+    canvas{width:min(460px,90vw);height:auto}
+    .row{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .grid{display:flex;flex-wrap:wrap;gap:8px}
     button{padding:6px 10px;border:1px solid #e6e6e6;background:#fff;border-radius:8px;cursor:pointer}
-    button:hover{border-color:#bbb}
+    .sw{width:44px;height:30px;border-radius:8px;border:1px solid #ddd;cursor:pointer}
+    select{padding:6px 10px;border:1px solid #e6e6e6;border-radius:8px;background:#fff}
   </style>
 </head>
 <body>
@@ -17,91 +19,98 @@
   <div class="box"><canvas id="c"></canvas></div>
 
   <div class="row">
-    <strong>Body:</strong>
-    <button data-b="n0">N-0</button>
-    <button data-b="n1">N-1</button>
-    <button data-b="n2">N-2</button>
+    <strong>Body set:</strong>
+    <select id="grp">
+      <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+    </select>
   </div>
+  <div class="row"><div id="bodyBtns" class="grid"></div></div>
 
   <div class="row">
     <strong>Belly:</strong>
-    <button data-e="n0">N-0</button>
-    <button data-e="n1">N-1</button>
-    <button data-e="n2">N-2</button>
+    <button data-ehex="#FFFFFF">N-0</button>
+    <button data-ehex="#BEBEBE">N-1</button>
+    <button data-ehex="#911B11">N-2</button>
   </div>
 
   <script>
-  const BASE="N0_body.png"
-  const MBODY="Mask_body.png"
-  const MBELLY="Mask_belly.png"
+    const BASE="N0_body.png"
+    const MBODY="Mask_body.png"
+    const MBELLY="Mask_belly.png"
 
-  const bodyC={n0:"#E6E6E6",n1:"#ABABAB",n2:"#82180A"}
-  const bellyC={n0:"#FFFFFF",n1:"#BEBEBE",n2:"#911B11"}
-  let pickB="n0", pickE="n0"
-
-  const c=document.getElementById("c"), x=c.getContext("2d")
-  const cb=document.createElement("canvas"), xb=cb.getContext("2d")
-  const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
-  const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
-
-  const img=new Image(), m1=new Image(), m2=new Image()
-  img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
-  img.src=BASE; m1.src=MBODY; m2.src=MBELLY
-
-  let loaded=0
-  const done=()=>{ if(++loaded<3)return
-    const w=img.naturalWidth, h=img.naturalHeight
-    c.width=w; c.height=h
-    cb.width=w; cb.height=h
-    cm1.width=w; cm1.height=h
-    cm2.width=w; cm2.height=h
-    draw()
-  }
-  img.onload=done; m1.onload=done; m2.onload=done
-
-  function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
-  function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
-
-  function paint(base,mask,color,orig){
-    const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(color)
-    for(let i=0;i<bd.length;i+=4){
-      if(md[i+3]<=10)continue
-      if(bd[i+3]<=10)continue
-      const l=L(od[i],od[i+1],od[i+2])   
-      if(l<=t)continue
-      bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
+    const sets={
+      N:{"N-0":"#E6E6E6","N-1":"#ABABAB","N-2":"#82180A"},
+      R:{"R-0":"#A67C6C","R-1":"#C2BFA0","R-2":"#8D4E1B","R-3":"#E59770","R-4":"#AAA6BF","R-5":"#B58D83","R-6":"#AABDC1","R-7":"#7F8B97","R-8":"#DD5C92","R-9":"#898989","R-10":"#95AED7","R-11":"#C98640","R-12":"#46727F"},
+      E:{"E-0":"#E6D585","E-1":"#D7ACE4","E-2":"#A1E5E4","E-3":"#BB331D","E-4":"#4A4A4A","E-5":"#4C9778","E-6":"#55769F","E-7":"#68934E","E-8":"#386DBD","E-9":"#7D2DDC","E-10":"#C038CA"},
+      U:{"U-0":"#E56A7E","U-1":"#E5CB43","U-2":"#E67BCD","U-3":"#9A5AE6","U-4":"#BEE500","U-5":"#363636","U-6":"#1DC3D3","U-7":"#548BE5"},
+      L:{"L-0":"#89D101","L-1":"#5FAEE6","L-2":"#E68512","L-3":"#D9402E","L-4":"#E6D900"}
     }
-  }
 
-  function draw(){
-    xb.clearRect(0,0,cb.width,cb.height)
-    xm1.clearRect(0,0,cm1.width,cm1.height)
-    xm2.clearRect(0,0,cm2.width,cm2.height)
-    xb.drawImage(img,0,0,cb.width,cb.height)
-    xm1.drawImage(m1,0,0,cm1.width,cm1.height)
-    xm2.drawImage(m2,0,0,cm2.width,cm2.height)
+    let bHex="#E6E6E6", eHex="#FFFFFF"
 
-    const base=xb.getImageData(0,0,cb.width,cb.height)
-    const orig=xb.getImageData(0,0,cb.width,cb.height)  
-    const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
-    const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
+    const c=document.getElementById("c"), x=c.getContext("2d")
+    const cb=document.createElement("canvas"), xb=cb.getContext("2d")
+    const cm1=document.createElement("canvas"), xm1=cm1.getContext("2d")
+    const cm2=document.createElement("canvas"), xm2=cm2.getContext("2d")
 
-    paint(base,maskE,bellyC[pickE],orig)
-    paint(base,maskB,bodyC[pickB],orig)
+    const img=new Image(), m1=new Image(), m2=new Image()
+    img.crossOrigin=m1.crossOrigin=m2.crossOrigin="anonymous"
+    img.src=BASE; m1.src=MBODY; m2.src=MBELLY
 
-    xb.putImageData(base,0,0)
-    x.clearRect(0,0,c.width,c.height)
-    x.drawImage(cb,0,0)
-  }
+    let ok=0
+    const ready=()=>{ if(++ok<3)return
+      const w=img.naturalWidth,h=img.naturalHeight
+      c.width=w;c.height=h;cb.width=w;cb.height=h;cm1.width=w;cm1.height=h;cm2.width=w;cm2.height=h
+      buildBtns("N"); draw()
+    }
+    img.onload=ready;m1.onload=ready;m2.onload=ready
 
-  document.querySelectorAll("button[data-b]").forEach(b=>{
-    b.onclick=()=>{pickB=b.getAttribute("data-b"); draw()}
-  })
-  document.querySelectorAll("button[data-e]").forEach(b=>{
-    b.onclick=()=>{pickE=b.getAttribute("data-e"); draw()}
-  })
-</script>
+    function hex2rgb(h){h=h.replace("#","");const n=parseInt(h,16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255}}
+    function L(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return(mx+mn)/510}
 
+    function paint(base,mask,color,orig){
+      const bd=base.data, md=mask.data, od=orig.data, t=0.40, rgb=hex2rgb(color)
+      for(let i=0;i<bd.length;i+=4){
+        if(md[i+3]<=10)continue
+        if(bd[i+3]<=10)continue
+        if(L(od[i],od[i+1],od[i+2])<=t)continue
+        bd[i]=rgb.r; bd[i+1]=rgb.g; bd[i+2]=rgb.b
+      }
+    }
+
+    function draw(){
+      xb.clearRect(0,0,cb.width,cb.height)
+      xm1.clearRect(0,0,cm1.width,cm1.height)
+      xm2.clearRect(0,0,cm2.width,cm2.height)
+      xb.drawImage(img,0,0,cb.width,cb.height)
+      xm1.drawImage(m1,0,0,cm1.width,cm1.height)
+      xm2.drawImage(m2,0,0,cm2.width,cm2.height)
+      const base=xb.getImageData(0,0,cb.width,cb.height)
+      const orig=xb.getImageData(0,0,cb.width,cb.height)
+      const maskE=xm2.getImageData(0,0,cm2.width,cm2.height)
+      const maskB=xm1.getImageData(0,0,cm1.width,cm1.height)
+      paint(base,maskE,eHex,orig)
+      paint(base,maskB,bHex,orig)
+      xb.putImageData(base,0,0)
+      x.clearRect(0,0,c.width,c.height)
+      x.drawImage(cb,0,0)
+    }
+
+    function buildBtns(group){
+      const wrap=document.getElementById("bodyBtns")
+      wrap.innerHTML=""
+      Object.entries(sets[group]).forEach(([k,v])=>{
+        const a=document.createElement("button")
+        a.className="sw"; a.title=k; a.style.background=v
+        a.onclick=()=>{bHex=v; draw()}
+        wrap.appendChild(a)
+      })
+    }
+
+    document.getElementById("grp").onchange=e=>{buildBtns(e.target.value)}
+    document.querySelectorAll("button[data-ehex]").forEach(b=>{
+      b.onclick=()=>{eHex=b.getAttribute("data-ehex"); draw()}
+    })
+  </script>
 </body>
 </html>
-
