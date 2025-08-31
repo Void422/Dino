@@ -1,0 +1,76 @@
+{
+  "images": {
+    "base": "N0_body.png",
+    "maskBody": "Mask_body.png",
+    "maskBelly": "Mask_belly.png"
+  },
+  "defaults": {
+    "body": "#E6E6E6",
+    "belly": "#FFFFFF",
+    "outlineGuard": 0.40
+  },
+  "bellyPresets": [
+    { "id": "N-0", "hex": "#FFFFFF", "name": "White" },
+    { "id": "N-1", "hex": "#BEBEBE", "name": "#BEBEBE" },
+    { "id": "N-2", "hex": "#911B11", "name": "#911B11" }
+  ],
+  "bodySets": {
+    "N": [
+      { "id": "N-0", "hex": "#E6E6E6", "name": "Platinum", "on": true },
+      { "id": "N-1", "hex": "#ABABAB", "name": "Silver Chalice", "on": true },
+      { "id": "N-2", "hex": "#82180A", "name": "Kenyan Copper", "on": true },
+      { "id": "N-3", "on": false }, { "id": "N-4", "on": false }, { "id": "N-5", "on": false },
+      { "id": "N-6", "on": false }, { "id": "N-7", "on": false }, { "id": "N-8", "on": false },
+      { "id": "N-9", "on": false }, { "id": "N-10", "on": false }, { "id": "N-11", "on": false },
+      { "id": "N-12", "on": false }, { "id": "N-13", "on": false }, { "id": "N-14", "on": false },
+      { "id": "N-15", "on": false }, { "id": "N-16", "on": false }, { "id": "N-17", "on": false },
+      { "id": "N-18", "on": false }, { "id": "N-19", "on": false }
+    ],
+    "R": [
+      { "id": "R-0", "hex": "#A67C6C", "name": "Beaver", "on": true },
+      { "id": "R-1", "hex": "#C2BFA0", "name": "Dark Vanilla", "on": true },
+      { "id": "R-2", "hex": "#8D4E1B", "name": "Saddle Brown", "on": true },
+      { "id": "R-3", "hex": "#E59770", "name": "Middle Red", "on": true },
+      { "id": "R-4", "hex": "#AAA6BF", "name": "Cadet Blue", "on": true },
+      { "id": "R-5", "hex": "#B58D83", "name": "Pale Taupe", "on": true },
+      { "id": "R-6", "hex": "#AABDC1", "name": "Opal", "on": true },
+      { "id": "R-7", "hex": "#7F8B97", "name": "Roman Silver", "on": true },
+      { "id": "R-8", "hex": "#DD5C92", "name": "Raspberry Pink", "on": true },
+      { "id": "R-9", "hex": "#898989", "name": "Taupe Gray", "on": true },
+      { "id": "R-10", "hex": "#95AED7", "name": "Wild Blue Yonder", "on": true },
+      { "id": "R-11", "hex": "#C98640", "name": "Peru", "on": true },
+      { "id": "R-12", "hex": "#46727F", "name": "Ming", "on": true },
+      { "id": "R-13", "on": false }
+    ],
+    "E": [
+      { "id": "E-0", "hex": "#E6D585", "name": "Flax", "on": true },
+      { "id": "E-1", "hex": "#D7ACE4", "name": "Tropical Violet", "on": true },
+      { "id": "E-2", "hex": "#A1E5E4", "name": "Non-Photo Blue", "on": true },
+      { "id": "E-3", "hex": "#BB331D", "name": "Dark Pastel Red", "on": true },
+      { "id": "E-4", "hex": "#4A4A4A", "name": "Quartz", "on": true },
+      { "id": "E-5", "hex": "#4C9778", "name": "Wintergreen Dream", "on": true },
+      { "id": "E-6", "hex": "#55769F", "name": "Blue Yonder", "on": true },
+      { "id": "E-7", "hex": "#68934E", "name": "Palm Leaf", "on": true },
+      { "id": "E-8", "hex": "#386DBD", "name": "Han Blue", "on": true },
+      { "id": "E-9", "hex": "#7D2DDC", "name": "Blue-Violet", "on": true },
+      { "id": "E-10", "hex": "#C038CA", "name": "Steel Pink", "on": true }
+    ],
+    "U": [
+      { "id": "U-0", "hex": "#E56A7E", "name": "Candy Pink", "on": true },
+      { "id": "U-1", "hex": "#E5CB43", "name": "Sandstorm", "on": true },
+      { "id": "U-2", "hex": "#E67BCD", "name": "Orchid", "on": true },
+      { "id": "U-3", "hex": "#9A5AE6", "name": "Lavender Indigo", "on": true },
+      { "id": "U-4", "hex": "#BEE500", "name": "Bitter Lemon", "on": true },
+      { "id": "U-5", "hex": "#363636", "name": "Jet", "on": true },
+      { "id": "U-6", "hex": "#1DC3D3", "name": "Battery Charged Blue", "on": true },
+      { "id": "U-7", "hex": "#548BE5", "name": "United Nations Blue", "on": true }
+    ],
+    "L": [
+      { "id": "L-0", "hex": "#89D101", "name": "Sheen Green", "on": true },
+      { "id": "L-1", "hex": "#5FAEE6", "name": "Blue Jeans", "on": true },
+      { "id": "L-2", "hex": "#E68512", "name": "Beer", "on": true },
+      { "id": "L-3", "hex": "#D9402E", "name": "CG Red", "on": true },
+      { "id": "L-4", "hex": "#E6D900", "name": "Peridot", "on": true }
+    ]
+  }
+}
