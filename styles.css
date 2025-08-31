@@ -17,4 +17,3 @@ canvas { width: min(560px, 92vw); height: auto; image-rendering: crisp-edges; }
 .meta .name { font-weight: 600; }
 select, button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
 button:hover { border-color: #bdbdbd; }
-.belly { display: flex; gap: 8px; flex-wrap: wrap; }
