@@ -7,15 +7,18 @@
   <link href="styles.css" rel="stylesheet" />
 </head>
 <body>
-  <header class="topbar">
+  <header class="nav">
+    <button id="menuBtn" class="icon" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="brand">Dino Customizer</div>
-    <div class="toolbar">
-      <label class="picker"><span>Body</span>
+    <div class="controls">
+      <label class="pick"><span>Body</span>
         <select id="groupSelect">
           <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
         </select>
       </label>
-      <label class="picker"><span>Belly</span>
+      <label class="pick"><span>Belly</span>
         <select id="bellySelect">
           <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
         </select>
@@ -23,31 +26,46 @@
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="stage"><canvas id="canvas"></canvas></section>
+  <aside id="drawer" class="drawer">
+    <div class="drawer-head">
+      <div class="t">Quick Settings</div>
+      <button id="closeDrawer" class="close">✕</button>
+    </div>
+    <div class="drawer-body">
+      <label class="pick full"><span>Body</span>
+        <select id="groupSelectMobile">
+          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+        </select>
+      </label>
+      <label class="pick full"><span>Belly</span>
+        <select id="bellySelectMobile">
+          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
+        </select>
+      </label>
+    </div>
+  </aside>
+  <div id="scrim" class="scrim"></div>
 
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Body colors</h3>
-        <div class="count" id="bodyCount"></div>
-      </div>
-      <div id="bodyGrid" class="grid"></div>
+  <main class="content">
+    <section class="left">
+      <div class="stage"><canvas id="canvas"></canvas></div>
     </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Belly colors</h3>
-        <div class="count" id="bellyCount"></div>
+    <section class="right">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Body colors</h3>
+          <div class="count" id="bodyCount"></div>
+        </div>
+        <div id="bodyGrid" class="grid"></div>
       </div>
-      <div id="bellyGrid" class="grid"></div>
-    </section>
 
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Designs</h3>
-        <div class="count" id="designCount"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Belly colors</h3>
+          <div class="count" id="bellyCount"></div>
+        </div>
+        <div id="bellyGrid" class="grid"></div>
       </div>
-      <div id="designGrid" class="grid"></div>
     </section>
   </main>
 
