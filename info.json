@@ -102,12 +102,5 @@
       { "id": "L-0", "on": false }, { "id": "L-1", "on": false }, { "id": "L-2", "on": false },
       { "id": "L-3", "on": false }, { "id": "L-4", "on": false }
     ]
-  },
-  "designs": [
-    { "id": "none", "name": "None", "src": "", "on": true,  "mode": "fixed", "hex": "#000000" },
-    { "id": "D-0", "name": "Fuzzy Edge",   "src": "N0.png", "on": true, "mode": "fixed", "hex": "#000000" },
-    { "id": "D-1", "name": "Spots",        "src": "N1.png", "on": true, "mode": "fixed", "hex": "#000000" },
-    { "id": "D-2", "name": "Tail Stripes", "src": "N2.png", "on": true, "mode": "fixed", "hex": "#000000" },
-    { "id": "D-3", "name": "Back Stripes", "src": "N3.png", "on": true, "mode": "fixed", "hex": "#000000" }
-  ]
+  }
 }
