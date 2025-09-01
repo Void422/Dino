@@ -1,48 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Dino Customizer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="styles.css" rel="stylesheet" />
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">Dino Customizer</div>
-    <div class="toolbar">
-      <label class="picker"><span>Body</span>
-        <select id="groupSelect">
-          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
-        </select>
-      </label>
-      <label class="picker"><span>Belly</span>
-        <select id="bellySelect">
-          <option>N</option><option>R</option><option>E</option><option>U</option><option>L</option>
-        </select>
-      </label>
+<main class="wrap">
+  <section class="stage"><canvas id="canvas"></canvas></section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Body colors</h3>
+      <div class="count" id="bodyCount"></div>
     </div>
-  </header>
+    <div id="bodyGrid" class="grid"></div>
+  </section>
 
-  <main class="wrap">
-    <section class="stage"><canvas id="canvas"></canvas></section>
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Belly colors</h3>
+      <div class="count" id="bellyCount"></div>
+    </div>
+    <div id="bellyGrid" class="grid"></div>
+  </section>
 
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Body colors</h3>
-        <div class="count" id="bodyCount"></div>
-      </div>
-      <div id="bodyGrid" class="grid"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Belly colors</h3>
-        <div class="count" id="bellyCount"></div>
-      </div>
-      <div id="bellyGrid" class="grid"></div>
-    </section>
-  </main>
-
-  <script src="script.js"></script>
-</body>
-</html>
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Designs</h3>
+      <div class="count" id="designCount"></div>
+    </div>
+    <div id="designGrid" class="grid"></div>
+  </section>
+</main>
